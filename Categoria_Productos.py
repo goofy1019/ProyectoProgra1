@@ -21,4 +21,5 @@ def Categoria_de_productos():
 
 Productos_Agregados = Categoria_de_productos()
 df = pd.DataFrame(Productos_Agregados)
+df.to_csv("Catalogo_Productos.csv", encoding='utf-8')
 print(df)
