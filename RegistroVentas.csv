@@ -1,1 +1,2 @@
-producto,cantidad,precio,cliente
+producto,cantidad,precio,cliente,metodo_pago
+Manzana,5,150,Juanito,Efectivo

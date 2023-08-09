@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import tkinter as tk
 from tkinter import messagebox
 from playsound import playsound
+import smtplib
+from PIL import Image, ImageTk
 
 # Clase para el sistema de gestión comercial
 class SistemaGestionComercial:
@@ -13,6 +15,7 @@ class SistemaGestionComercial:
         self.productos = []
         self.metodos_pago = []
         self.ventas = []
+        self.cargar_metodos_pago()
 
     # Funciones para la gestión de información
     def registrar_usuario(self, nombre, direccion, telefono, correo):
@@ -54,17 +57,19 @@ class SistemaGestionComercial:
         return iva
 
     # Funciones para la gestión de inventarios de ventas
-    def registrar_venta(self, producto, cantidad, precio, cliente):
+    def registrar_venta(self, producto, cantidad, precio, cliente, metodo_pago):
         venta = {
             'producto': producto,
             'cantidad': cantidad,
             'precio': precio,
-            'cliente': cliente
+            'cliente': cliente,
+            'metodo_pago': metodo_pago
         }
         if producto == "bruh":
             playsound('Bruh.wav')
         else:
             self.ventas.append(venta)
+            self.actualizar_inventario(producto, cantidad)
             self.guardar_ventas_en_csv()
             messagebox.showinfo("Registro de Venta", "Venta registrada exitosamente.")
 
@@ -72,6 +77,12 @@ class SistemaGestionComercial:
     def guardar_ventas_en_csv(self):
         df_ventas = pd.DataFrame(self.ventas)
         df_ventas.to_csv('RegistroVentas.csv', index=False)
+
+    #Funcion para poder actualizar el inventario
+    def actualizar_inventario(self, producto, cantidad_vendida):
+        for prod in self.productos:
+            if prod['nombre'] == producto:
+                prod['cantidad_disponible'] -= cantidad_vendida
 
 
     def generar_informe_ventas(self):
@@ -101,20 +112,52 @@ class SistemaGestionComercial:
         self.productos.append(producto)
         messagebox.showinfo("Ingreso de Producto", "Producto ingresado exitosamente.")
 
-    # Funciones para el sistema de pagos
+    #Funcion que carga los metodos de pago aceptados
+    def cargar_metodos_pago(self):
+        try:
+            metodos_pago_df = pd.read_csv("metodos_pago.csv")
+            self.metodos_pago = metodos_pago_df["metodo_pago"].tolist()
+        except FileNotFoundError:
+            self.metodos_pago = []
+
+    #Guarda los metodos de pago cuando ya se termina
+    def guardar_metodos_pago(self):
+        metodos_pago_df = pd.DataFrame({"metodo_pago": self.metodos_pago})
+        metodos_pago_df.to_csv("metodos_pago.csv", index=False)
+
+    #Funcion que ayuda para registrar un metodo de pago
     def registrar_metodo_pago(self, metodo_pago):
         self.metodos_pago.append(metodo_pago)
+        self.guardar_metodos_pago()
         messagebox.showinfo("Registro de Método de Pago", "Método de pago registrado exitosamente.")
 
-    def seleccionar_metodo_pago(self, metodo_pago):
-        # Seleccionar método de pago
-        # ...
-        messagebox.showinfo("Selección de Método de Pago", f"Método de pago seleccionado: {metodo_pago}")
-
+    #Funcion para enviar factura al cliente
     def enviar_factura(self, cliente, factura):
-        # Enviar factura por correo electrónico al cliente
-        # ...
-        messagebox.showinfo("Envío de Factura", f"Factura enviada al cliente: {cliente}")
+        # Configurar los detalles del servidor de correo
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+        sender_email = "gestionsistema53@gmail.com"
+        sender_password = "Proyecto123"
+
+        # Crear el mensaje
+        subject = "Factura para el cliente"
+        message = f"Estimado cliente {cliente},\nAdjuntamos la factura:\n\n{factura}"
+
+        try:
+            # Iniciar conexión con el servidor
+            server = smtplib.SMTP(smtp_server, smtp_port)
+            server.starttls()
+            # Iniciar sesión con tu cuenta de correo
+            server.login(sender_email, sender_password)
+            # Enviar el correo electrónico
+            server.sendmail(sender_email, cliente, f"Subject: {subject}\n\n{message}")
+            # Terminar la conexión
+            server.quit()
+
+            messagebox.showinfo("Envío de Factura", "Factura enviada exitosamente por correo electrónico.")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo enviar la factura. Error: {str(e)}")
+
 
     # Funciones para el sistema de gráficos
     def generar_grafico_productos_mas_vendidos(self):
@@ -256,7 +299,15 @@ class SistemaGestionComercial:
                 cantidad = entry_cantidad.get()
                 precio = entry_precio.get()
                 cliente = entry_cliente.get()
-                self.registrar_venta(producto, cantidad, precio, cliente)
+                metodo_pago = metodo_pago_var.get()
+
+                if not metodo_pago:
+                    messagebox.showerror("Error", "Por favor, seleccione un método de pago.")
+                    return
+
+                
+                
+                sistema.registrar_venta(producto, cantidad, precio, cliente, metodo_pago)
                 ventana_registro_venta.destroy()
 
             label_producto = tk.Label(ventana_registro_venta, text="Producto:")
@@ -278,6 +329,14 @@ class SistemaGestionComercial:
             label_cliente.pack()
             entry_cliente = tk.Entry(ventana_registro_venta)
             entry_cliente.pack()
+
+            label_metodo_pago = tk.Label(ventana_registro_venta, text="Método de Pago:")
+            label_metodo_pago.pack()
+
+            metodo_pago_var = tk.StringVar(ventana_registro_venta)
+            metodo_pago_var.set("")  # Valor inicial vacío
+            dropdown_metodo_pago = tk.OptionMenu(ventana_registro_venta, metodo_pago_var, *sistema.metodos_pago)
+            dropdown_metodo_pago.pack()
 
             btn_registrar = tk.Button(ventana_registro_venta, text="Registrar", command=registrar_venta)
             btn_registrar.pack()
@@ -378,28 +437,10 @@ class SistemaGestionComercial:
             btn_registrar = tk.Button(ventana_registro_metodo_pago, text="Registrar", command=registrar_metodo_pago)
             btn_registrar.pack()
 
-        def mostrar_seleccion_metodo_pago():
-            ventana_seleccion_metodo_pago = tk.Toplevel(ventana_principal)
-            ventana_seleccion_metodo_pago.title("Selección de Método de Pago")
-            ventana_seleccion_metodo_pago.geometry("800x600")
-
-            def seleccionar_metodo_pago():
-                metodo_pago = entry_metodo_pago.get()
-                self.seleccionar_metodo_pago(metodo_pago)
-                ventana_seleccion_metodo_pago.destroy()
-
-            label_metodo_pago = tk.Label(ventana_seleccion_metodo_pago, text="Método de Pago:")
-            label_metodo_pago.pack()
-            entry_metodo_pago = tk.Entry(ventana_seleccion_metodo_pago)
-            entry_metodo_pago.pack()
-
-            btn_seleccionar = tk.Button(ventana_seleccion_metodo_pago, text="Seleccionar", command=seleccionar_metodo_pago)
-            btn_seleccionar.pack()
-
         def mostrar_envio_factura():
             ventana_envio_factura = tk.Toplevel(ventana_principal)
             ventana_envio_factura.title("Envío de Factura")
-            ventana_envio_factura.geometry("800x600")
+            ventana_envio_factura.geometry("200x150")
 
             def enviar_factura():
                 cliente = entry_cliente.get()
@@ -434,7 +475,14 @@ class SistemaGestionComercial:
 
         ventana_principal = tk.Tk()
         ventana_principal.title("Sistema de Gestión Comercial Avanzado")
-        ventana_principal.geometry("800x600")
+        ventana_principal.geometry("600x800")
+        
+        imagen_fondo = Image.open("Stonks.jpg")
+   
+        imagen_fondo = ImageTk.PhotoImage(imagen_fondo)
+        
+        label_fondo = tk.Label(ventana_principal, image=imagen_fondo)
+        label_fondo.place(x=0, y=0, relwidth=1, relheight=1)
 
         btn_registro_usuario = tk.Button(ventana_principal, text="Registrar Usuario", command=mostrar_registro_usuario, width=20, height=2)
         btn_registro_usuario.pack(pady=10)
@@ -466,18 +514,15 @@ class SistemaGestionComercial:
         btn_registro_metodo_pago = tk.Button(ventana_principal, text="Registrar Método de Pago", command=mostrar_registro_metodo_pago, width=20, height=2)
         btn_registro_metodo_pago.pack(pady=10)
 
-        btn_seleccion_metodo_pago = tk.Button(ventana_principal, text="Selección de Método de Pago", command=mostrar_seleccion_metodo_pago, width=20, height=2)
-        btn_seleccion_metodo_pago.pack(pady=10)
-
         btn_envio_factura = tk.Button(ventana_principal, text="Envío de Factura", command=mostrar_envio_factura, width=20, height=2)
         btn_envio_factura.pack(pady=10)
 
-        btn_grafico_productos_mas_vendidos = tk.Button(ventana_principal, text="Gráfico de Productos Más Vendidos", command=mostrar_grafico_productos_mas_vendidos, width=20, height=2)
+        btn_grafico_productos_mas_vendidos = tk.Button(ventana_principal, text="Gráfico de Productos Más Vendidos", command=mostrar_grafico_productos_mas_vendidos, width=30, height=2)
         btn_grafico_productos_mas_vendidos.pack(pady=10)
 
         ventana_principal.mainloop()
 
 
-# Ejemplo de uso del programa
+#Se inicializa el sistema
 sistema = SistemaGestionComercial()
 sistema.menu_principal()
