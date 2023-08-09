@@ -1,9 +1,8 @@
-
-#import pandas as pd
-#import matplotlib.pyplot as plt
+import pandas as pd
+import matplotlib.pyplot as plt
 import tkinter as tk
 from tkinter import messagebox
-
+from playsound import playsound
 
 # Clase para el sistema de gestión comercial
 class SistemaGestionComercial:
@@ -62,10 +61,18 @@ class SistemaGestionComercial:
             'precio': precio,
             'cliente': cliente
         }
-        self.ventas.append(venta)
-        # Actualizar inventario
-        # ...
-        messagebox.showinfo("Registro de Venta", "Venta registrada exitosamente.")
+        if producto == "bruh":
+            playsound('Bruh.wav')
+        else:
+            self.ventas.append(venta)
+            self.guardar_ventas_en_csv()
+            messagebox.showinfo("Registro de Venta", "Venta registrada exitosamente.")
+
+    #Funcion para poder guardar la info de ventas usando la libreria pandas
+    def guardar_ventas_en_csv(self):
+        df_ventas = pd.DataFrame(self.ventas)
+        df_ventas.to_csv('RegistroVentas.csv', index=False)
+
 
     def generar_informe_ventas(self):
         df_ventas = pd.DataFrame(self.ventas)
@@ -238,10 +245,11 @@ class SistemaGestionComercial:
             btn_configurar = tk.Button(ventana_configuracion_iva, text="Configurar", command=configurar_iva)
             btn_configurar.pack()
 
+        #Funcion que modifica la interfaz de la ventana para el registro de las ventas
         def mostrar_registro_venta():
             ventana_registro_venta = tk.Toplevel(ventana_principal)
             ventana_registro_venta.title("Registro de Venta")
-            ventana_registro_venta.geometry("800x600")
+            ventana_registro_venta.geometry("200x250")
 
             def registrar_venta():
                 producto = entry_producto.get()
@@ -440,7 +448,7 @@ class SistemaGestionComercial:
         btn_configuracion_iva = tk.Button(ventana_principal, text="Configuración de IVA", command=mostrar_configuracion_iva, width=20, height=2)
         btn_configuracion_iva.pack(pady=10)
 
-        btn_registro_venta = tk.Button(ventana_principal, text="Registrar Venta", command=mostrar_registro_venta, width=20, height=2)
+        btn_registro_venta = tk.Button(ventana_principal, text="Registrar Venta", command=mostrar_registro_venta , width=20, height=2)
         btn_registro_venta.pack(pady=10)
 
         btn_informe_ventas = tk.Button(ventana_principal, text="Informe de Ventas", command=mostrar_informe_ventas, width=20, height=2)
