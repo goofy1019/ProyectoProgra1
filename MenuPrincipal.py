@@ -51,10 +51,11 @@ class SistemaGestionComercial:
     def configurar_valores_iva(self, valores_iva):
         self.valores_iva = valores_iva
         messagebox.showinfo("Configuración de IVA", "Valores de IVA configurados exitosamente.")
-
+        
     def calcular_iva(self, precio, porcentaje_iva):
         iva = precio * (porcentaje_iva / 100)
         return iva
+    
 
     # Funciones para la gestión de inventarios de ventas
     def registrar_venta(self, producto, cantidad, precio, cliente, metodo_pago):
