@@ -7,13 +7,13 @@ def Categoria_de_productos():
         if nombre_producto == "fin":
             break
         Precio_producto = float(input("Ingrese el precio del producto: "))
-        Categoria_Producto = input("Ingrese la categoria a la que pertenece el producto: ")
+        Cantidad_Producto = int(input("Ingrese la cantidad del producto: "))
         
 
         producto = {
             'Nombre': nombre_producto,
             'Precio': Precio_producto,
-            'Categoria': Categoria_Producto
+            'Cantidad': Cantidad_Producto
         }
         lista_productos.append(producto)
 
