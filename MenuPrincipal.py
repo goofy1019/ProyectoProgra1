@@ -104,7 +104,6 @@ class SistemaGestionComercial:
     def cargar_desde_csv(self):
         try:
             df_productos = pd.read_csv("Catalogo_Productos.csv")
-            print(df_productos)  # Agregar esta línea para imprimir el contenido del DataFrame
             return df_productos.to_dict(orient='records')
         except FileNotFoundError:
             return []
@@ -352,7 +351,7 @@ class SistemaGestionComercial:
         def mostrar_registro_venta():
             ventana_registro_venta = tk.Toplevel(ventana_principal)
             ventana_registro_venta.title("Registro de Venta")
-            ventana_registro_venta.geometry("200x250")
+            ventana_registro_venta.geometry("300x250")
 
             def registrar_venta():
                 producto = entry_producto.get()
@@ -475,7 +474,7 @@ class SistemaGestionComercial:
         def mostrar_registro_metodo_pago():
             ventana_registro_metodo_pago = tk.Toplevel(ventana_principal)
             ventana_registro_metodo_pago.title("Registro de Método de Pago")
-            ventana_registro_metodo_pago.geometry("800x600")
+            ventana_registro_metodo_pago.geometry("200x100")
 
             def registrar_metodo_pago():
                 metodo_pago = entry_metodo_pago.get()
@@ -521,8 +520,8 @@ class SistemaGestionComercial:
 ######################################################################################################################################
 
         ventana_principal = tk.Tk()
-        ventana_principal.title("Sistema de Gestión Comercial Avanzado")
-        ventana_principal.geometry("600x800")
+        ventana_principal.title("Sistema de Gestión Comercial")
+        ventana_principal.geometry("600x700")
         
         imagen_fondo = Image.open("Stonks.jpg")
    
