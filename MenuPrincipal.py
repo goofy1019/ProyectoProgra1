@@ -15,6 +15,7 @@ class SistemaGestionComercial:
         self.productos = self.cargar_desde_csv()
         self.metodos_pago = []
         self.ventas = self.cargar_ventas_desde_csv()
+        self.id_venta = 1
         self.cargar_metodos_pago()
 
     # Funciones para la gestión de información
@@ -67,6 +68,7 @@ class SistemaGestionComercial:
         precio = producto_encontrado['Precio']
             
         venta = {
+            'id': len(self.ventas) + 1,
             'producto': producto,
             'cantidad': cantidad,
             'precio': precio,
@@ -79,13 +81,16 @@ class SistemaGestionComercial:
             self.ventas.append(venta)
             self.actualizar_inventario(producto, cantidad)
             self.guardar_ventas_en_csv()
+            self.id_venta += 1
             messagebox.showinfo("Registro de Venta", "Venta registrada exitosamente.")
 
     #Carga las ventas anteriores
     def cargar_ventas_desde_csv(self):
         try:
-            df_ventas = pd.read_csv("RegistroVentas.csv")
-            return df_ventas.to_dict(orient='records')
+            df_ventas = pd.read_csv('RegistroVentas.csv')
+            df_ventas['id'] = df_ventas['id'].astype(int)  # Convertir la columna 'id' a enteros
+            ventas = df_ventas.to_dict('records')
+            return ventas
         except FileNotFoundError:
             return []
 
@@ -168,31 +173,56 @@ class SistemaGestionComercial:
         messagebox.showinfo("Registro de Método de Pago", "Método de pago registrado exitosamente.")
 
     #Funcion para enviar factura al cliente
-    def enviar_factura(self, cliente, factura):
-        # Configurar los detalles del servidor de correo
-        smtp_server = "smtp.gmail.com"
-        smtp_port = 587
-        sender_email = "gestionsistema53@gmail.com"
-        sender_password = "Proyecto123"
+    def enviar_factura(self, cliente, id_venta):
+        venta_encontrada = None
+        for venta in self.ventas:
+            if venta['id'] == id_venta:
+                venta_encontrada = venta
+                break
 
-        # Crear el mensaje
-        subject = "Factura para el cliente"
-        message = f"Estimado cliente {cliente},\nAdjuntamos la factura:\n\n{factura}"
+        if venta_encontrada:
+            # Configurar los detalles del servidor de correo
+            smtp_server = "smtp.gmail.com"
+            smtp_port = 587
+            sender_email = "gestionsistema53@gmail.com"
+            sender_password = "owpexhtgwaicabqn"
 
-        try:
-            # Iniciar conexión con el servidor
-            server = smtplib.SMTP(smtp_server, smtp_port)
-            server.starttls()
-            # Iniciar sesión con tu cuenta de correo
-            server.login(sender_email, sender_password)
-            # Enviar el correo electrónico
-            server.sendmail(sender_email, cliente, f"Subject: {subject}\n\n{message}")
-            # Terminar la conexión
-            server.quit()
+            # Crear el mensaje
+            subject = "Factura para el cliente"
+            message = f"Estimado cliente {cliente},\nAdjuntamos la factura de la venta:\n\n"
+            message += f"ID de Venta: {venta['id']}\n"
+            message += f"Producto: {venta['producto']}\n"
+            message += f"Cantidad: {venta['cantidad']}\n"
+            message += f"Precio: {venta['precio']}\n"
+            message += f"Método de Pago: {venta['metodo_pago']}\n\n"
 
-            messagebox.showinfo("Envío de Factura", "Factura enviada exitosamente por correo electrónico.")
-        except Exception as e:
-            messagebox.showerror("Error", f"No se pudo enviar la factura. Error: {str(e)}")
+            try:
+                # Iniciar conexión con el servidor
+                server = smtplib.SMTP(smtp_server, smtp_port)
+                server.starttls()
+
+                # Iniciar sesión con tu cuenta de correo
+                server.login(sender_email, sender_password)
+            
+                # Construir el mensaje completo
+                full_message = f"Subject: {subject}\n\n{message}"
+            
+                # Convertir el mensaje a bytes utilizando UTF-8
+                full_message_bytes = full_message.encode("utf-8")
+            
+                # Enviar el correo electrónico
+                server.sendmail(sender_email, cliente, full_message_bytes)
+            
+                # Terminar la conexión
+                server.quit()
+
+
+                messagebox.showinfo("Envío de Factura", "Factura enviada exitosamente por correo electrónico.")
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo enviar la factura. Error: {str(e)}")
+
+        else:
+            messagebox.showerror("Error", f"No se encontró la venta con ID {id_venta}.")
 
 
     # Funciones para el sistema de gráficos
@@ -473,19 +503,23 @@ class SistemaGestionComercial:
 
             def enviar_factura():
                 cliente = entry_cliente.get()
-                factura = entry_factura.get()
-                self.enviar_factura(cliente, factura)
-                ventana_envio_factura.destroy()
+                id_venta_str = entry_id_venta.get()  # Obtener el ID de venta ingresado como cadena
+                try:
+                    id_venta = int(id_venta_str)  # Convertir la cadena a entero
+                    sistema.enviar_factura(cliente, id_venta)  # Llamar a la función enviar_factura
+                    ventana_envio_factura.destroy()
+                except ValueError:
+                    messagebox.showerror("Error", "ID de Venta debe ser un número entero")
 
             label_cliente = tk.Label(ventana_envio_factura, text="Cliente:")
             label_cliente.pack()
             entry_cliente = tk.Entry(ventana_envio_factura)
             entry_cliente.pack()
 
-            label_factura = tk.Label(ventana_envio_factura, text="Factura:")
-            label_factura.pack()
-            entry_factura = tk.Entry(ventana_envio_factura)
-            entry_factura.pack()
+            label_id_venta = tk.Label(ventana_envio_factura, text="ID de Venta:")
+            label_id_venta.pack()
+            entry_id_venta = tk.Entry(ventana_envio_factura)
+            entry_id_venta.pack()
 
             btn_enviar = tk.Button(ventana_envio_factura, text="Enviar", command=enviar_factura)
             btn_enviar.pack()
