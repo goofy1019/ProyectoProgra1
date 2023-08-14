@@ -1,13 +1,16 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import tkinter as tk
-from tkinter import messagebox
-from playsound import playsound
-import smtplib
-from PIL import Image, ImageTk
+import pandas as pd #Libreria que ayuda a analizar los CSV
+#import matplotlib.pyplot as plt
+import tkinter as tk #Libreria de la interfaz
+from tkinter import messagebox #Verifica que se importe los messageboxes para poder interactuar con el usuario
+from playsound import playsound #Libreria para poner soniditos
+import smtplib #Libreria que nos va a ayudar con el manejo de los envios de correo
+from PIL import Image, ImageTk #Libreria para poder insertar imagenes en la interfaz
+
+######################################################################################################################################
 
 # Clase para el sistema de gestión comercial
 class SistemaGestionComercial:
+    #Funcion para inicializar ciertas variables y elementos necesarios
     def __init__(self):
         self.usuarios = []
         self.clientes = []
@@ -65,7 +68,7 @@ class SistemaGestionComercial:
                 producto_encontrado = prod
                 break
 
-        precio = producto_encontrado['Precio']
+        precio = producto_encontrado['Precio'] 
             
         venta = {
             'id': len(self.ventas) + 1,
@@ -565,6 +568,7 @@ class SistemaGestionComercial:
 
         ventana_principal.mainloop()
 
+######################################################################################################################################
 
 #Se inicializa el sistema
 sistema = SistemaGestionComercial()
