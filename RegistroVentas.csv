@@ -1,2 +1,5 @@
 producto,cantidad,precio,cliente,metodo_pago
-Manzana,5,150,Juanito,Efectivo
+Manzana,5,500.0,Juan,Tarjeta de Credito
+Banano,20,600.0,Juan,Tarjeta de Credito
+Banano,49,600.0,Pedro,Tarjeta de Credito
+Banano,49,600.0,Pedro,Tarjeta de Credito

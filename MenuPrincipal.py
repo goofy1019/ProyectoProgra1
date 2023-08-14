@@ -12,9 +12,9 @@ class SistemaGestionComercial:
         self.usuarios = []
         self.clientes = []
         self.proveedores = []
-        self.productos = []
+        self.productos = self.cargar_desde_csv()
         self.metodos_pago = []
-        self.ventas = []
+        self.ventas = self.cargar_ventas_desde_csv()
         self.cargar_metodos_pago()
 
     # Funciones para la gestión de información
@@ -57,7 +57,15 @@ class SistemaGestionComercial:
         return iva
 
     # Funciones para la gestión de inventarios de ventas
-    def registrar_venta(self, producto, cantidad, precio, cliente, metodo_pago):
+    def registrar_venta(self, producto, cantidad, cliente, metodo_pago):
+        producto_encontrado = None
+        for prod in self.productos:
+            if prod['Nombre'] == producto:
+                producto_encontrado = prod
+                break
+
+        precio = producto_encontrado['Precio']
+            
         venta = {
             'producto': producto,
             'cantidad': cantidad,
@@ -73,16 +81,44 @@ class SistemaGestionComercial:
             self.guardar_ventas_en_csv()
             messagebox.showinfo("Registro de Venta", "Venta registrada exitosamente.")
 
-    #Funcion para poder guardar la info de ventas usando la libreria pandas
+    #Carga las ventas anteriores
+    def cargar_ventas_desde_csv(self):
+        try:
+            df_ventas = pd.read_csv("RegistroVentas.csv")
+            return df_ventas.to_dict(orient='records')
+        except FileNotFoundError:
+            return []
+
+    def obtener_producto_por_nombre(self, nombre_producto):
+        for prod in self.productos:
+            if prod['Nombre'] == nombre_producto:
+                return prod
+        return None
+
+    #Carga los productos del catalogo para que cada vez que se empiece el programa salgan
+    def cargar_desde_csv(self):
+        try:
+            df_productos = pd.read_csv("Catalogo_Productos.csv")
+            print(df_productos)  # Agregar esta línea para imprimir el contenido del DataFrame
+            return df_productos.to_dict(orient='records')
+        except FileNotFoundError:
+            return []
+
+    #Funciones para poder guardar la info de ventas usando la libreria pandas
     def guardar_ventas_en_csv(self):
         df_ventas = pd.DataFrame(self.ventas)
         df_ventas.to_csv('RegistroVentas.csv', index=False)
 
+    def guardar_productos_en_csv(self):
+        df_productos = pd.DataFrame(self.productos)
+        df_productos.to_csv('Catalogo_Productos.csv', index=False)
+
     #Funcion para poder actualizar el inventario
     def actualizar_inventario(self, producto, cantidad_vendida):
         for prod in self.productos:
-            if prod['nombre'] == producto:
-                prod['cantidad_disponible'] -= cantidad_vendida
+            if prod['Nombre'] == producto:
+                prod['Cantidad'] -= int(cantidad_vendida)
+        self.guardar_productos_en_csv()
 
 
     def generar_informe_ventas(self):
@@ -297,7 +333,6 @@ class SistemaGestionComercial:
             def registrar_venta():
                 producto = entry_producto.get()
                 cantidad = entry_cantidad.get()
-                precio = entry_precio.get()
                 cliente = entry_cliente.get()
                 metodo_pago = metodo_pago_var.get()
 
@@ -305,10 +340,9 @@ class SistemaGestionComercial:
                     messagebox.showerror("Error", "Por favor, seleccione un método de pago.")
                     return
 
-                
-                
-                sistema.registrar_venta(producto, cantidad, precio, cliente, metodo_pago)
+                sistema.registrar_venta(producto, cantidad, cliente, metodo_pago)
                 ventana_registro_venta.destroy()
+
 
             label_producto = tk.Label(ventana_registro_venta, text="Producto:")
             label_producto.pack()
@@ -319,11 +353,6 @@ class SistemaGestionComercial:
             label_cantidad.pack()
             entry_cantidad = tk.Entry(ventana_registro_venta)
             entry_cantidad.pack()
-
-            label_precio = tk.Label(ventana_registro_venta, text="Precio:")
-            label_precio.pack()
-            entry_precio = tk.Entry(ventana_registro_venta)
-            entry_precio.pack()
 
             label_cliente = tk.Label(ventana_registro_venta, text="Cliente:")
             label_cliente.pack()
