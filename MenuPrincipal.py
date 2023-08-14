@@ -224,13 +224,7 @@ class SistemaGestionComercial:
         else:
             messagebox.showerror("Error", f"No se encontró la venta con ID {id_venta}.")
 
-
-    # Funciones para el sistema de gráficos
-    def generar_grafico_productos_mas_vendidos(self):
-        df_ventas = pd.DataFrame(self.ventas)
-        productos_mas_vendidos = df_ventas.groupby('producto').sum().nlargest(10, 'cantidad')
-        productos_mas_vendidos.plot(kind='bar', x='producto', y='cantidad')
-        plt.show()
+######################################################################################################################################
 
     # Función para el menú principal
     def menu_principal(self):
@@ -524,17 +518,7 @@ class SistemaGestionComercial:
             btn_enviar = tk.Button(ventana_envio_factura, text="Enviar", command=enviar_factura)
             btn_enviar.pack()
 
-        def mostrar_grafico_productos_mas_vendidos():
-            ventana_grafico_productos_mas_vendidos = tk.Toplevel(ventana_principal)
-            ventana_grafico_productos_mas_vendidos.title("Gráfico de Productos Más Vendidos")
-            ventana_grafico_productos_mas_vendidos.geometry("800x600")
-
-            def generar_grafico():
-                self.generar_grafico_productos_mas_vendidos()
-                ventana_grafico_productos_mas_vendidos.destroy()
-
-            btn_generar = tk.Button(ventana_grafico_productos_mas_vendidos, text="Generar Gráfico", command=generar_grafico)
-            btn_generar.pack()
+######################################################################################################################################
 
         ventana_principal = tk.Tk()
         ventana_principal.title("Sistema de Gestión Comercial Avanzado")
@@ -579,9 +563,6 @@ class SistemaGestionComercial:
 
         btn_envio_factura = tk.Button(ventana_principal, text="Envío de Factura", command=mostrar_envio_factura, width=20, height=2)
         btn_envio_factura.pack(pady=10)
-
-        btn_grafico_productos_mas_vendidos = tk.Button(ventana_principal, text="Gráfico de Productos Más Vendidos", command=mostrar_grafico_productos_mas_vendidos, width=30, height=2)
-        btn_grafico_productos_mas_vendidos.pack(pady=10)
 
         ventana_principal.mainloop()
 
