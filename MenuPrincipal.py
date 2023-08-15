@@ -2,9 +2,10 @@ import pandas as pd #Libreria que ayuda a analizar los CSV
 #import matplotlib.pyplot as plt
 import tkinter as tk #Libreria de la interfaz
 from tkinter import messagebox #Verifica que se importe los messageboxes para poder interactuar con el usuario
-from playsound import playsound #Libreria para poner soniditos
 import smtplib #Libreria que nos va a ayudar con el manejo de los envios de correo
 from PIL import Image, ImageTk #Libreria para poder insertar imagenes en la interfaz
+import csv
+import subprocess
 
 ######################################################################################################################################
 
@@ -13,7 +14,7 @@ class SistemaGestionComercial:
     #Funcion para inicializar ciertas variables y elementos necesarios
     def __init__(self):
         self.usuarios = []
-        self.clientes = []
+        self.clientes = self.cargar_clientes_desde_csv()
         self.proveedores = []
         self.productos = self.cargar_desde_csv()
         self.metodos_pago = []
@@ -40,7 +41,24 @@ class SistemaGestionComercial:
             'correo': correo
         }
         self.clientes.append(cliente)
+        self.guardar_clientes_en_csv()  # Llamamos a la función para guardar en CSV
         messagebox.showinfo("Ingreso de Cliente", "Cliente ingresado exitosamente.")
+
+    def guardar_clientes_en_csv(self):
+        with open("clientes.csv", "w", newline="") as csvfile:
+            fieldnames = ['nombre', 'direccion', 'telefono', 'correo']
+            csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            for cliente in self.clientes:
+                csv_writer.writerow(cliente)
+
+    def cargar_clientes_desde_csv(self):
+        try:
+            df_clientes = pd.read_csv("clientes.csv")
+            clientes = df_clientes.to_dict('records')
+            return clientes
+        except FileNotFoundError:
+            return []
 
     def ingresar_proveedor(self, nombre, direccion, contacto):
         proveedor = {
@@ -61,31 +79,43 @@ class SistemaGestionComercial:
         return iva
 
     # Funciones para la gestión de inventarios de ventas
-    def registrar_venta(self, producto, cantidad, cliente, metodo_pago):
+    def registrar_venta(self, producto, cantidad, cliente_nombre, metodo_pago):
         producto_encontrado = None
         for prod in self.productos:
             if prod['Nombre'] == producto:
                 producto_encontrado = prod
                 break
 
-        precio = producto_encontrado['Precio'] 
+        if producto_encontrado is None:
+            messagebox.showerror("Error", "Producto no encontrado.")
+            return
+
+        precio = producto_encontrado['Precio']
+
+        cliente_encontrado = None
+        for c in self.clientes:
+            if c['nombre'] == cliente_nombre:
+                cliente_encontrado = c
+                break
+
+        if cliente_encontrado is None:
+            messagebox.showerror("Error", "Cliente no encontrado.")
+            return
             
         venta = {
             'id': len(self.ventas) + 1,
             'producto': producto,
             'cantidad': cantidad,
             'precio': precio,
-            'cliente': cliente,
+            'cliente': cliente_encontrado['nombre'],
             'metodo_pago': metodo_pago
         }
-        if producto == "bruh":
-            playsound('Bruh.wav')
-        else:
-            self.ventas.append(venta)
-            self.actualizar_inventario(producto, cantidad)
-            self.guardar_ventas_en_csv()
-            self.id_venta += 1
-            messagebox.showinfo("Registro de Venta", "Venta registrada exitosamente.")
+    
+        self.ventas.append(venta)
+        self.actualizar_inventario(producto, cantidad)
+        self.guardar_ventas_en_csv()
+        self.id_venta += 1
+        messagebox.showinfo("Registro de Venta", "Venta registrada exitosamente.")
 
     #Carga las ventas anteriores
     def cargar_ventas_desde_csv(self):
@@ -269,7 +299,16 @@ class SistemaGestionComercial:
         def mostrar_ingreso_cliente():
             ventana_ingreso_cliente = tk.Toplevel(ventana_principal)
             ventana_ingreso_cliente.title("Ingreso de Cliente")
-            ventana_ingreso_cliente.geometry("800x600")
+            ventana_ingreso_cliente.geometry("500x500")
+
+            def cargar_clientes_desde_csv():
+                self.clientes = self.cargar_clientes_desde_csv()
+
+            def abrir_archivo_csv():
+                try:
+                    subprocess.Popen(["start", "clientes.csv"], shell=True)
+                except Exception as e:
+                    messagebox.showerror("Error", f"No se pudo abrir el archivo CSV. Error: {str(e)}")
 
             def ingresar_cliente():
                 nombre = entry_nombre.get()
@@ -298,6 +337,9 @@ class SistemaGestionComercial:
             label_correo.pack()
             entry_correo = tk.Entry(ventana_ingreso_cliente)
             entry_correo.pack()
+
+            btn_abrir_csv = tk.Button(ventana_ingreso_cliente, text="Abrir CSV en Excel", command=abrir_archivo_csv)
+            btn_abrir_csv.pack()
 
             btn_ingresar = tk.Button(ventana_ingreso_cliente, text="Ingresar", command=ingresar_cliente)
             btn_ingresar.pack()
@@ -359,7 +401,7 @@ class SistemaGestionComercial:
             def registrar_venta():
                 producto = entry_producto.get()
                 cantidad = entry_cantidad.get()
-                cliente = entry_cliente.get()
+                cliente = cliente_var.get()
                 metodo_pago = metodo_pago_var.get()
 
                 if not metodo_pago:
@@ -382,8 +424,12 @@ class SistemaGestionComercial:
 
             label_cliente = tk.Label(ventana_registro_venta, text="Cliente:")
             label_cliente.pack()
-            entry_cliente = tk.Entry(ventana_registro_venta)
-            entry_cliente.pack()
+             # Obtener la lista de clientes desde el sistema y crear el menú desplegable
+            clientes = [cliente['nombre'] for cliente in sistema.clientes]
+            cliente_var = tk.StringVar(ventana_registro_venta)
+            cliente_var.set("")  # Valor inicial vacío
+            dropdown_cliente = tk.OptionMenu(ventana_registro_venta, cliente_var, *clientes)
+            dropdown_cliente.pack()
 
             label_metodo_pago = tk.Label(ventana_registro_venta, text="Método de Pago:")
             label_metodo_pago.pack()
@@ -495,22 +541,36 @@ class SistemaGestionComercial:
         def mostrar_envio_factura():
             ventana_envio_factura = tk.Toplevel(ventana_principal)
             ventana_envio_factura.title("Envío de Factura")
-            ventana_envio_factura.geometry("200x150")
+            ventana_envio_factura.geometry("300x250")
 
             def enviar_factura():
-                cliente = entry_cliente.get()
+                cliente = cliente_var.get()
                 id_venta_str = entry_id_venta.get()  # Obtener el ID de venta ingresado como cadena
+                cliente_encontrado = None
                 try:
                     id_venta = int(id_venta_str)  # Convertir la cadena a entero
-                    sistema.enviar_factura(cliente, id_venta)  # Llamar a la función enviar_factura
-                    ventana_envio_factura.destroy()
+                    for c in sistema.clientes:
+                        if c['nombre'] == cliente:
+                            cliente_encontrado = c
+                            break
+                    if cliente_encontrado:
+                        correo_cliente = cliente_encontrado['correo']
+                        sistema.enviar_factura(correo_cliente, id_venta)  # Llamar a la función enviar_factura
+                        ventana_envio_factura.destroy()
+                    else:
+                        messagebox.showerror("Error", "Cliente no encontrado.")
                 except ValueError:
                     messagebox.showerror("Error", "ID de Venta debe ser un número entero")
 
             label_cliente = tk.Label(ventana_envio_factura, text="Cliente:")
             label_cliente.pack()
-            entry_cliente = tk.Entry(ventana_envio_factura)
-            entry_cliente.pack()
+
+            # Obtener la lista de clientes desde el sistema y crear el menú desplegable
+            clientes = [cliente['nombre'] for cliente in sistema.clientes]
+            cliente_var = tk.StringVar(ventana_envio_factura)
+            cliente_var.set("")  # Valor inicial vacío
+            dropdown_cliente = tk.OptionMenu(ventana_envio_factura, cliente_var, *clientes)
+            dropdown_cliente.pack()
 
             label_id_venta = tk.Label(ventana_envio_factura, text="ID de Venta:")
             label_id_venta.pack()
