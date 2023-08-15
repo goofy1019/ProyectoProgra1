@@ -1,2 +1,4 @@
-producto,cantidad,precio,cliente,metodo_pago
-Manzana,5,150,Juanito,Efectivo
+id,producto,cantidad,precio,cliente,metodo_pago
+1,Manzana,45,500,Juan,Transferencia Sinpe
+2,Manzana,14,500,Adolfo,Tarjeta de Credito
+3,Martillo,2,13000,Adolfo,Efectivo

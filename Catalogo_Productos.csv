@@ -1,3 +1,5 @@
-,Nombre,Precio,Categoria
-0,Banano,20.0,Fruta
-1,Manzana,25.0,Fruta
+Nombre,Precio,Cantidad
+Manzana,500,191
+Banano,600,200
+Jack Daniels,25000,125
+Martillo,13000,66

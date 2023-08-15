@@ -19,7 +19,21 @@ def Categoria_de_productos():
 
     return lista_productos
 
-Productos_Agregados = Categoria_de_productos()
+def guardar_en_csv(productos):
+    df = pd.DataFrame(productos)
+    df.to_csv("Catalogo_Productos.csv", encoding='utf-8', index=False)
+
+def cargar_desde_csv():
+    try:
+        df = pd.read_csv("Catalogo_Productos.csv")
+        return df.to_dict(orient='records')
+    except FileNotFoundError:
+        return []
+
+Productos_Agregados = cargar_desde_csv()
+nuevos_productos = Categoria_de_productos()
+Productos_Agregados.extend(nuevos_productos)
+guardar_en_csv(Productos_Agregados)
+
 df = pd.DataFrame(Productos_Agregados)
-df.to_csv("Catalogo_Productos.csv", encoding='utf-8')
 print(df)
