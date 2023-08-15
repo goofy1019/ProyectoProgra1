@@ -70,15 +70,17 @@ class SistemaGestionComercial:
         messagebox.showinfo("Ingreso de Proveedor", "Proveedor ingresado exitosamente.")
 
     # Funciones para el cálculo del IVA
-    def configurar_valores_iva(self, valores_iva):
-        self.valores_iva = valores_iva
-        messagebox.showinfo("Configuración de IVA", "Valores de IVA configurados exitosamente.")
-        
-    def calcular_iva(self, precio, porcentaje_iva):
-        iva = precio * (porcentaje_iva / 100)
-        return iva
+    def calcular_precio_con_iva(self, precio, Valor_IVA):
+        while True:
+            precio = float(input("Ingrese el precio (ingrese 0 para salir): "))
+            Valor_IVA = float(input("Ingese el valor de IVA: "))
+            if precio == 0:
+                break
+        iva = precio * Valor_IVA
+        precio_con_iva = precio + iva
+        print(f"El precio con IVA es: {precio_con_iva}") 
     
-
+    
     # Funciones para la gestión de inventarios de ventas
     def registrar_venta(self, producto, cantidad, cliente_nombre, metodo_pago):
         producto_encontrado = None
@@ -175,13 +177,11 @@ class SistemaGestionComercial:
         messagebox.showinfo("Informe de Clientes", "Informe de clientes generado exitosamente.")
 
     # Funciones para el catálogo de productos
-    def ingresar_producto(self, nombre, descripcion, precio, proveedor, porcentaje_iva):
+    def ingresar_producto(self, nombre, precio, Cantidad):
         producto = {
             'nombre': nombre,
-            'descripcion': descripcion,
             'precio': precio,
-            'proveedor': proveedor,
-            'porcentaje_iva': porcentaje_iva
+            'Cantidad': Cantidad
         }
         self.productos.append(producto)
         messagebox.showinfo("Ingreso de Producto", "Producto ingresado exitosamente.")
