@@ -78,7 +78,27 @@ class SistemaGestionComercial:
                 break
         iva = precio * Valor_IVA
         precio_con_iva = precio + iva
-        print(f"El precio con IVA es: {precio_con_iva}") 
+        print(f"El precio con IVA es: {precio_con_iva}")
+
+
+    def mostrar_inventario(self):
+            ventana_inventario = tk.Toplevel()
+            ventana_inventario.title("Inventario de Productos")
+            ventana_inventario.geometry("800x600")
+
+            label_titulo = tk.Label(ventana_inventario, text="Inventario de Productos")
+            label_titulo.pack()
+
+            # Crear una tabla o lista para mostrar los productos y su información
+            lista_productos = tk.Listbox(ventana_inventario, height=30, width=100)
+            lista_productos.pack()
+
+            for producto in self.productos:
+                info_producto = f"Nombre: {producto['Nombre']}, Precio: {producto['Precio']}, Cantidad: {producto['Cantidad']}"
+                lista_productos.insert(tk.END, info_producto)
+
+            btn_cerrar = tk.Button(ventana_inventario, text="Cerrar", command=ventana_inventario.destroy)
+            btn_cerrar.pack()
     
     
     # Funciones para la gestión de inventarios de ventas
@@ -94,6 +114,7 @@ class SistemaGestionComercial:
             return
 
         precio = producto_encontrado['Precio']
+        cantidad_disponible = producto_encontrado['Cantidad']
 
         cliente_encontrado = None
         for c in self.clientes:
@@ -103,6 +124,10 @@ class SistemaGestionComercial:
 
         if cliente_encontrado is None:
             messagebox.showerror("Error", "Cliente no encontrado.")
+            return
+
+        if int(cantidad) > cantidad_disponible:
+            messagebox.showerror("Error", "Cantidad insuficiente en inventario.")
             return
             
         venta = {
@@ -264,7 +289,7 @@ class SistemaGestionComercial:
         def mostrar_registro_usuario():
             ventana_registro_usuario = tk.Toplevel(ventana_principal)
             ventana_registro_usuario.title("Registro de Usuario")
-            ventana_registro_usuario.geometry("800x600")
+            ventana_registro_usuario.geometry("300x300")
 
             def registrar_usuario():
                 nombre = entry_nombre.get()
@@ -300,7 +325,7 @@ class SistemaGestionComercial:
         def mostrar_ingreso_cliente():
             ventana_ingreso_cliente = tk.Toplevel(ventana_principal)
             ventana_ingreso_cliente.title("Ingreso de Cliente")
-            ventana_ingreso_cliente.geometry("500x500")
+            ventana_ingreso_cliente.geometry("300x300")
 
             def cargar_clientes_desde_csv():
                 self.clientes = self.cargar_clientes_desde_csv()
@@ -339,7 +364,7 @@ class SistemaGestionComercial:
             entry_correo = tk.Entry(ventana_ingreso_cliente)
             entry_correo.pack()
 
-            btn_abrir_csv = tk.Button(ventana_ingreso_cliente, text="Abrir CSV en Excel", command=abrir_archivo_csv)
+            btn_abrir_csv = tk.Button(ventana_ingreso_cliente, text="Modificar Datos", command=abrir_archivo_csv)
             btn_abrir_csv.pack()
 
             btn_ingresar = tk.Button(ventana_ingreso_cliente, text="Ingresar", command=ingresar_cliente)
@@ -348,7 +373,7 @@ class SistemaGestionComercial:
         def mostrar_ingreso_proveedor():
             ventana_ingreso_proveedor = tk.Toplevel(ventana_principal)
             ventana_ingreso_proveedor.title("Ingreso de Proveedor")
-            ventana_ingreso_proveedor.geometry("800x600")
+            ventana_ingreso_proveedor.geometry("300x300")
 
             def ingresar_proveedor():
                 nombre = entry_nombre.get()
@@ -585,7 +610,7 @@ class SistemaGestionComercial:
 
         ventana_principal = tk.Tk()
         ventana_principal.title("Sistema de Gestión Comercial")
-        ventana_principal.geometry("600x700")
+        ventana_principal.geometry("600x750")
         
         imagen_fondo = Image.open("Stonks.jpg")
    
@@ -605,6 +630,9 @@ class SistemaGestionComercial:
 
         btn_configuracion_iva = tk.Button(ventana_principal, text="Configuración de IVA", command=mostrar_configuracion_iva, width=20, height=2)
         btn_configuracion_iva.pack(pady=10)
+
+        btn_inventario = tk.Button(ventana_principal, text="Inventario de Productos", command=self.mostrar_inventario, width=20, height=2)
+        btn_inventario.pack(pady=10)
 
         btn_registro_venta = tk.Button(ventana_principal, text="Registrar Venta", command=mostrar_registro_venta , width=20, height=2)
         btn_registro_venta.pack(pady=10)
