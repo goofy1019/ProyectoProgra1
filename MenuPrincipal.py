@@ -14,7 +14,6 @@ class SistemaGestionComercial:
     
     #Funcion para inicializar ciertas variables y elementos necesarios
     def __init__(self):
-        self.proveedores = self.cargar_proveedores_desde_csv()
         self.usuarios = self.cargar_usuarios_desde_csv() #Llama a los usuarios que ya estan en el CSV
         self.clientes = self.cargar_clientes_desde_csv() #Llama a los clientes que ya estan en el CSV
         self.proveedores = self.cargar_proveedores_desde_csv() #Llama a los proveedores que ya estan en el CSV
