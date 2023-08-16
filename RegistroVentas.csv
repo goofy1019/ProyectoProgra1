@@ -1,6 +1,2 @@
 id,producto,cantidad,precio,cliente,metodo_pago
-1,Manzana,45,500,Juan,Transferencia Sinpe
-2,Manzana,14,500,Adolfo,Tarjeta de Credito
-3,Martillo,2,13000,Adolfo,Efectivo
-4,Banano,45,600,Juanito,Transferencia Sinpe
-5,Banano,156,600,Adolfo,Efectivo
+1,Manzana,10,500,Adolfo,SINPE Movil

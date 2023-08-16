@@ -13,26 +13,44 @@ import subprocess
 class SistemaGestionComercial:
     #Funcion para inicializar ciertas variables y elementos necesarios
     def __init__(self):
-        self.usuarios = []
+        self.usuarios = self.cargar_usuarios_desde_csv()
         self.clientes = self.cargar_clientes_desde_csv()
-        self.proveedores = []
+        self.proveedores = self.cargar_proveedores_desde_csv()
         self.productos = self.cargar_desde_csv()
         self.metodos_pago = []
         self.ventas = self.cargar_ventas_desde_csv()
         self.id_venta = 1
         self.cargar_metodos_pago()
 
-    # Funciones para la gestión de información
+    # Funciones para la gestión de los usuarios
     def registrar_usuario(self, nombre, direccion, telefono, correo):
         usuario = {
-            'nombre': nombre,
+            'usuario': nombre,
             'direccion': direccion,
             'telefono': telefono,
             'correo': correo
         }
         self.usuarios.append(usuario)
-        messagebox.showinfo("Registro de Usuario", "Usuario registrado exitosamente.")
+        self.guardar_usuarios_en_csv()  # Llamamos a la función para guardar los usuarios en el CSV
+        messagebox.showinfo("Ingreso de Usuario", "Usuario ingresado exitosamente.")
 
+    def guardar_usuarios_en_csv(self):
+        with open("usuarios.csv", "w", newline="") as csvfile:
+            fieldnames = ['usuario', 'direccion', 'telefono', 'correo']
+            csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            for usuario in self.usuarios:
+                csv_writer.writerow(usuario)
+
+    def cargar_usuarios_desde_csv(self):
+        try:
+            df_usuarios = pd.read_csv("usuarios.csv")
+            usuarios = df_usuarios.to_dict('records')
+            return usuarios
+        except FileNotFoundError:
+            return []
+        
+    # Funciones para la gestión de los clientes
     def ingresar_cliente(self, nombre, direccion, telefono, correo):
         cliente = {
             'nombre': nombre,
@@ -60,14 +78,33 @@ class SistemaGestionComercial:
         except FileNotFoundError:
             return []
 
-    def ingresar_proveedor(self, nombre, direccion, contacto):
+    # Funciones para la gestión de los proveedores
+    def ingresar_proveedor(self, nombre, empresa, direccion, contacto):
         proveedor = {
             'nombre': nombre,
-            'direccion': direccion,
-            'contacto': contacto
+            'empresa': empresa,
+            'telefono': direccion,
+            'correo': contacto
         }
         self.proveedores.append(proveedor)
+        self.guardar_proveedores_en_csv()  # Llamamos a la función para guardar en CSV
         messagebox.showinfo("Ingreso de Proveedor", "Proveedor ingresado exitosamente.")
+
+    def guardar_proveedores_en_csv(self):
+        with open("proveedores.csv", "w", newline="") as csvfile:
+            fieldnames = ['nombre', 'empresa', 'telefono', 'correo']
+            csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            for proveedor in self.proveedores:
+                csv_writer.writerow(proveedor)
+
+    def cargar_proveedores_desde_csv(self):
+        try:
+            df_proveedores = pd.read_csv("proveedores.csv")
+            proveedores = df_proveedores.to_dict('records')
+            return proveedores
+        except FileNotFoundError:
+            return []
 
     # Funciones para el cálculo del IVA
     def calcular_precio_con_iva(self, precio, Valor_IVA):
@@ -246,12 +283,14 @@ class SistemaGestionComercial:
             sender_password = "owpexhtgwaicabqn"
 
             # Crear el mensaje
+            preciototal = int(venta['precio']) * int(venta['cantidad'])
             subject = "Factura para el cliente"
             message = f"Estimado cliente {cliente},\nAdjuntamos la factura de la venta:\n\n"
             message += f"ID de Venta: {venta['id']}\n"
             message += f"Producto: {venta['producto']}\n"
             message += f"Cantidad: {venta['cantidad']}\n"
-            message += f"Precio: {venta['precio']}\n"
+            message += f"Precio unitario: {venta['precio']}\n"
+            message += f"Precio total: " + str(preciototal) +"\n"
             message += f"Método de Pago: {venta['metodo_pago']}\n\n"
 
             try:
@@ -377,9 +416,10 @@ class SistemaGestionComercial:
 
             def ingresar_proveedor():
                 nombre = entry_nombre.get()
+                empresa = entry_empresa.get()
                 direccion = entry_direccion.get()
                 contacto = entry_contacto.get()
-                self.ingresar_proveedor(nombre, direccion, contacto)
+                self.ingresar_proveedor(nombre, empresa, direccion, contacto)
                 ventana_ingreso_proveedor.destroy()
 
             label_nombre = tk.Label(ventana_ingreso_proveedor, text="Nombre:")
@@ -387,12 +427,17 @@ class SistemaGestionComercial:
             entry_nombre = tk.Entry(ventana_ingreso_proveedor)
             entry_nombre.pack()
 
-            label_direccion = tk.Label(ventana_ingreso_proveedor, text="Dirección:")
+            label_empresa = tk.Label(ventana_ingreso_proveedor, text="Empresa:")
+            label_empresa.pack()
+            entry_empresa = tk.Entry(ventana_ingreso_proveedor)
+            entry_empresa.pack()
+
+            label_direccion = tk.Label(ventana_ingreso_proveedor, text="Telefono:")
             label_direccion.pack()
             entry_direccion = tk.Entry(ventana_ingreso_proveedor)
             entry_direccion.pack()
 
-            label_contacto = tk.Label(ventana_ingreso_proveedor, text="Contacto:")
+            label_contacto = tk.Label(ventana_ingreso_proveedor, text="Correo:")
             label_contacto.pack()
             entry_contacto = tk.Entry(ventana_ingreso_proveedor)
             entry_contacto.pack()
