@@ -552,13 +552,77 @@ class SistemaGestionComercial:
             ventana_informe_ventas = tk.Toplevel(ventana_principal)
             ventana_informe_ventas.title("Informe de Ventas")
             ventana_informe_ventas.geometry("800x600")
+    
+            def actualizar_seleccion(*args):
+                opcion = filtro_combobox.get()
+                if opcion == "Cliente":
+                    opciones_seleccion = list(data['cliente'].unique())
+                elif opcion == "Producto":
+                    opciones_seleccion = list(data['producto'].unique())
+                elif opcion == "TipoPago":
+                    opciones_seleccion = list(data['metodo_pago'].unique())
+                else:
+                    opciones_seleccion = []
+                opciones_seleccion.insert(0, "Todos")
+                seleccion_combobox["values"] = opciones_seleccion
 
             def generar_informe():
-                self.generar_informe_ventas()
-                ventana_informe_ventas.destroy()
+                opcion = filtro_combobox.get()
+                seleccion = seleccion_combobox.get()
+        
+                if seleccion == "Todos":
+                    ventas_filtradas = data.copy()
+                    titulo = f"Informe de ventas para todos los {opcion.lower()}s"
+                else:
+                    if opcion == "Cliente":
+                        filtro_columna = 'cliente'
+                        titulo = f"Informe de ventas para el cliente: {seleccion}"
+                    elif opcion == "Producto":
+                        filtro_columna = 'producto'
+                        titulo = f"Informe de ventas para el producto: {seleccion}"
+                    elif opcion == "TipoPago":
+                        filtro_columna = 'metodo_pago'
+                        ventas_filtradas = data[data[filtro_columna] == seleccion]
+                        titulo = f"Informe de ventas para el tipo de pago: {seleccion}"
+                    else:
+                        messagebox.showinfo("Error", "Opción de filtrado no válida.")
+                        return
+            
+                    ventas_filtradas = data[data[filtro_columna] == seleccion]
 
-            btn_generar = tk.Button(ventana_informe_ventas, text="Generar Informe", command=generar_informe)
-            btn_generar.pack()
+                # Calcular el total de ventas para la selección
+                total_ventas = ventas_filtradas['cantidad'] * ventas_filtradas['precio']
+                ventas_filtradas['total_venta'] = total_ventas
+
+                informe_text.delete(1.0, tk.END)  # Limpiar el área de texto
+
+                if ventas_filtradas.empty:
+                    messagebox.showinfo("Información", f"No se encontraron ventas para la {opcion.lower()} especificada: {seleccion}")
+                else:
+                    informe_text.insert(tk.END, f"{titulo}\n\n")
+                    informe_text.insert(tk.END, ventas_filtradas[['id', 'cliente', 'producto', 'cantidad', 'precio', 'total_venta', 'metodo_pago']].to_string(index=False))
+                    monto_total_ventas = total_ventas.sum()
+                    informe_text.insert(tk.END, f"\n\nMonto total de ventas: ${monto_total_ventas:.2f}")
+    
+            archivo_csv = "RegistroVentas.csv"  # Asegúrate de que el nombre del archivo coincida con el que estás utilizando
+            data = pd.read_csv(archivo_csv)
+
+            filtro_label = tk.Label(ventana_informe_ventas, text="Seleccione un Filtro:")
+            filtro_label.pack()
+            filtro_combobox = ttk.Combobox(ventana_informe_ventas, values=["Cliente", "Producto", "TipoPago"], state="readonly")
+            filtro_combobox.pack()
+            filtro_combobox.bind("<<ComboboxSelected>>", actualizar_seleccion)
+
+            seleccion_label = tk.Label(ventana_informe_ventas, text="Seleccione un Cliente, Producto o Tipo de Pago:")
+            seleccion_label.pack()
+            seleccion_combobox = ttk.Combobox(ventana_informe_ventas, values=[], state="readonly")
+            seleccion_combobox.pack()
+
+            generar_button = tk.Button(ventana_informe_ventas, text="Generar Informe", command=generar_informe)
+            generar_button.pack()
+
+            informe_text = tk.Text(ventana_informe_ventas)
+            informe_text.pack()
 
         def mostrar_informe_clientes():
             ventana_informe_clientes = tk.Toplevel(ventana_principal)
