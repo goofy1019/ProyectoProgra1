@@ -109,14 +109,10 @@ class SistemaGestionComercial:
 
     #Funciones para el cálculo del IVA
     def calcular_precio_con_iva(self, precio, Valor_IVA):
-        while True:
-            precio = float(input("Ingrese el precio (ingrese 0 para salir): "))
-            Valor_IVA = float(input("Ingese el valor de IVA: "))
-            if precio == 0:
-                break
-        iva = precio * Valor_IVA
-        precio_con_iva = precio + iva
-        print(f"El precio con IVA es: {precio_con_iva}")
+        iva = float(precio)*float(Valor_IVA)/100
+        precio_con_iva = float(precio) + iva
+        messagebox.showinfo("Informe de IVA", f"EL precio con el IVA incluido es: ₡{precio_con_iva}")
+
 
     #Funcion que nos permite desplegar el inventario
     def mostrar_inventario(self):
@@ -456,20 +452,28 @@ class SistemaGestionComercial:
 
         def mostrar_configuracion_iva():
             ventana_configuracion_iva = tk.Toplevel(ventana_principal)
-            ventana_configuracion_iva.title("Configuración de IVA")
+            ventana_configuracion_iva.title("Cálculo de IVA")
             ventana_configuracion_iva.geometry("800x600")
 
             def configurar_iva():
-                valores_iva = entry_valores_iva.get().split(',')
-                self.configurar_valores_iva(valores_iva)
-                ventana_configuracion_iva.destroy() #Cierra la ventana cuando se termina
+                precio = entry_precio_iva.get()
+                porcentaje = entry_porcentaje_iva.get()
+                self.calcular_precio_con_iva(precio,porcentaje)
+                ventana_configuracion_iva.destroy()
 
-            label_valores_iva = tk.Label(ventana_configuracion_iva, text="Valores de IVA (separados por coma):")
-            label_valores_iva.pack()
-            entry_valores_iva = tk.Entry(ventana_configuracion_iva)
-            entry_valores_iva.pack()
 
-            btn_configurar = tk.Button(ventana_configuracion_iva, text="Configurar", command=configurar_iva)
+
+            label_precio_iva = tk.Label(ventana_configuracion_iva, text="Precio:")
+            label_precio_iva.pack()
+            entry_precio_iva = tk.Entry(ventana_configuracion_iva)
+            entry_precio_iva.pack()
+
+            label_porcentaje_iva = tk.Label(ventana_configuracion_iva, text="Porcentaje de IVA:")
+            label_porcentaje_iva.pack()
+            entry_porcentaje_iva = tk.Entry(ventana_configuracion_iva)
+            entry_porcentaje_iva.pack()
+
+            btn_configurar = tk.Button(ventana_configuracion_iva, text="Calcular", command=configurar_iva)
             btn_configurar.pack()
 
         #Funcion que modifica la interfaz de la ventana para el registro de las ventas
@@ -679,7 +683,7 @@ class SistemaGestionComercial:
         btn_ingreso_proveedor.pack(pady=10)
 
         #Agrega boton para el IVA
-        btn_configuracion_iva = tk.Button(ventana_principal, text="Configuración de IVA", command=mostrar_configuracion_iva, width=20, height=2)
+        btn_configuracion_iva = tk.Button(ventana_principal, text="Cálculo de IVA", command=mostrar_configuracion_iva, width=20, height=2)
         btn_configuracion_iva.pack(pady=10)
 
         #Agrega boton para el registro de ventas
