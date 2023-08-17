@@ -1,3 +1,4 @@
 id,producto,cantidad,precio,cliente,metodo_pago
 1,Manzana,10,500.0,Adolfo,SINPE Movil
 2,Chicharron,13,1695.0,Adolfo,Venta de rinones
+3,Chicharron,14,1695.0,Adolfo,Tarjeta de Credito

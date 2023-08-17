@@ -3,6 +3,8 @@ import pandas as pd #Libreria que ayuda a analizar los CSV
 import tkinter as tk #Libreria de la interfaz
 from tkinter import messagebox #Verifica que se importe los messageboxes para poder interactuar con el usuario
 from tkinter import ttk #Para poder hacer uno de los dropdowns
+from tkinter import Scrollbar, Text, StringVar
+from tkinter.ttk import Combobox
 import smtplib #Libreria que nos va a ayudar con el manejo de los envios de correo
 from PIL import Image, ImageTk #Libreria para poder insertar imagenes en la interfaz
 import csv
@@ -221,10 +223,22 @@ class SistemaGestionComercial:
         informe_ventas = df_ventas.groupby('producto').sum()['cantidad']
         messagebox.showinfo("Informe de Ventas", str(informe_ventas))
 
-    def generar_informe_clientes(self):
-        # Generar informe de clientes
-        # ...
-        messagebox.showinfo("Informe de Clientes", "Informe de clientes generado exitosamente.")
+    def generar_informe_clientes(self, cliente, text_widget):
+        text_widget.delete(1.0, tk.END)
+        if cliente == "Todos":
+            text_widget.insert(tk.END, "Información de todos los clientes:\n{'='*30}\n")
+            with open('clientes.csv', 'r', newline='', encoding='utf-8') as archivo:
+                lector_csv = csv.DictReader(archivo)
+                for fila in lector_csv:
+                    text_widget.insert(tk.END, f"Nombre: {fila['nombre']}\nDirección: {fila['direccion']}\nTeléfono: {fila['telefono']}\nCorreo: {fila['correo']}\n{'='*20}\n")
+        else:
+            text_widget.insert(tk.END, f"Información del cliente {cliente}:\n{'='*30}\n")
+            with open('clientes.csv', 'r', newline='', encoding='utf-8') as archivo:
+                lector_csv = csv.DictReader(archivo)
+                for fila in lector_csv:
+                    if fila['nombre'] == cliente:
+                        text_widget.insert(tk.END, f"Nombre: {fila['nombre']}\nDirección: {fila['direccion']}\nTeléfono: {fila['telefono']}\nCorreo: {fila['correo']}\n{'='*20}\n")
+                        break
 
     #Funcion para el ingreso de productos
     def ingresar_producto_csv(self, nombre, precio, Cantidad, IVA):
@@ -550,13 +564,32 @@ class SistemaGestionComercial:
             ventana_informe_clientes = tk.Toplevel(ventana_principal)
             ventana_informe_clientes.title("Informe de Clientes")
             ventana_informe_clientes.geometry("800x600")
+            def informe_clientes():
+                cliente = seleccion_cliente.get()
+                texto = text_widget
+                self.generar_informe_clientes(cliente, texto)
+            text_widget = Text(ventana_informe_clientes, wrap=tk.WORD)
+            text_widget.pack(fill=tk.BOTH, expand=True)
 
-            def generar_informe():
-                self.generar_informe_clientes()
-                ventana_informe_clientes.destroy()
+            scrollbar = Scrollbar(ventana_informe_clientes, command=text_widget.yview)
+            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            text_widget.config(yscrollcommand=scrollbar.set)
 
-            btn_generar = tk.Button(ventana_informe_clientes, text="Generar Informe", command=generar_informe)
-            btn_generar.pack()
+            clientes = ["Todos"]
+            with open('clientes.csv', 'r', newline='', encoding='utf-8') as archivo:
+                lector_csv = csv.DictReader(archivo)
+                for fila in lector_csv:
+                    clientes.append(fila['nombre'])
+
+            seleccion_cliente = StringVar()
+            seleccion_cliente.set(clientes[0])
+
+            combobox = Combobox(ventana_informe_clientes, values=clientes, textvariable=seleccion_cliente)
+            combobox.pack()
+
+            boton_mostrar = tk.Button(ventana_informe_clientes, text="Mostrar información", command=lambda: informe_clientes())
+            boton_mostrar.pack()
+
 
         def mostrar_ingreso_producto():
             ventana_ingreso_producto = tk.Toplevel(ventana_principal)
