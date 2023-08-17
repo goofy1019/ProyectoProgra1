@@ -676,11 +676,11 @@ class SistemaGestionComercial:
         btn_registro_usuario.pack(pady=10)
 
         #Agrega boton para el registro de clientes
-        btn_ingreso_cliente = tk.Button(ventana_principal, text="Ingresar Cliente", command=mostrar_ingreso_cliente, width=20, height=2)
+        btn_ingreso_cliente = tk.Button(ventana_principal, text="Registrar Cliente", command=mostrar_ingreso_cliente, width=20, height=2)
         btn_ingreso_cliente.pack(pady=10)
 
         #Agrega boton para el registro de proveedores
-        btn_ingreso_proveedor = tk.Button(ventana_principal, text="Ingresar Proveedor", command=mostrar_ingreso_proveedor, width=20, height=2)
+        btn_ingreso_proveedor = tk.Button(ventana_principal, text="Registrar Proveedor", command=mostrar_ingreso_proveedor, width=20, height=2)
         btn_ingreso_proveedor.pack(pady=10)
 
         #Agrega boton para el IVA
