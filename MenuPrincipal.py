@@ -2,6 +2,7 @@ import pandas as pd #Libreria que ayuda a analizar los CSV
 #import matplotlib.pyplot as plt
 import tkinter as tk #Libreria de la interfaz
 from tkinter import messagebox #Verifica que se importe los messageboxes para poder interactuar con el usuario
+from tkinter import ttk #Para poder hacer uno de los dropdowns
 import smtplib #Libreria que nos va a ayudar con el manejo de los envios de correo
 from PIL import Image, ImageTk #Libreria para poder insertar imagenes en la interfaz
 import csv
@@ -226,11 +227,12 @@ class SistemaGestionComercial:
         messagebox.showinfo("Informe de Clientes", "Informe de clientes generado exitosamente.")
 
     #Funcion para el ingreso de productos
-    def ingresar_producto_csv(self, nombre, precio, Cantidad):
+    def ingresar_producto_csv(self, nombre, precio, Cantidad, IVA):
         lista_producto = []
+        precio_iva = int(precio) + (int(precio) * (float(IVA)/100))
         producto = {
             'nombre': nombre,
-            'precio': precio,
+            'precio': precio_iva,
             'Cantidad': Cantidad
         }
         #self.productos.append(producto)
@@ -457,7 +459,7 @@ class SistemaGestionComercial:
         def mostrar_configuracion_iva():
             ventana_configuracion_iva = tk.Toplevel(ventana_principal)
             ventana_configuracion_iva.title("Cálculo de IVA")
-            ventana_configuracion_iva.geometry("800x600")
+            ventana_configuracion_iva.geometry("200x200")
 
             def configurar_iva():
                 precio = entry_precio_iva.get()
@@ -559,20 +561,20 @@ class SistemaGestionComercial:
         def mostrar_ingreso_producto():
             ventana_ingreso_producto = tk.Toplevel(ventana_principal)
             ventana_ingreso_producto.title("Ingreso de Producto")
-            ventana_ingreso_producto.geometry("800x600")
+            ventana_ingreso_producto.geometry("300x300")
 
             def ingresar_producto():
                 nombre = entry_nombre.get()
                 precio = entry_precio.get()
                 cantidad = entry_cantidad.get()
-                self.ingresar_producto_csv(nombre, precio, cantidad)
+                IVA = combo_iva.get()
+                self.ingresar_producto_csv(nombre, precio, cantidad, IVA)
                 ventana_ingreso_producto.destroy()
 
             label_nombre = tk.Label(ventana_ingreso_producto, text="Nombre:")
             label_nombre.pack()
             entry_nombre = tk.Entry(ventana_ingreso_producto)
             entry_nombre.pack()
-
 
             label_precio = tk.Label(ventana_ingreso_producto, text="Precio:")
             label_precio.pack()
@@ -584,7 +586,12 @@ class SistemaGestionComercial:
             entry_cantidad = tk.Entry(ventana_ingreso_producto)
             entry_cantidad.pack()
 
-
+            label_iva = tk.Label(ventana_ingreso_producto, text="% IVA:")
+            label_iva.pack()
+            iva_opciones = ["1", "2", "4", "13"]# Crear un menú desplegable con las opciones de IVA
+            combo_iva = ttk.Combobox(ventana_ingreso_producto, values=iva_opciones)
+            combo_iva.pack()
+            
             btn_ingresar = tk.Button(ventana_ingreso_producto, text="Ingresar", command=ingresar_producto)
             btn_ingresar.pack()
 
@@ -680,6 +687,10 @@ class SistemaGestionComercial:
         btn_configuracion_iva = tk.Button(ventana_principal, text="Cálculo de IVA", command=mostrar_configuracion_iva, width=20, height=2)
         btn_configuracion_iva.pack(pady=10)
 
+        #Agrega boton para el registro de productos
+        btn_ingreso_producto = tk.Button(ventana_principal, text="Ingresar Producto", command=mostrar_ingreso_producto, width=20, height=2)
+        btn_ingreso_producto.pack(pady=10)
+
         #Agrega boton para el registro de ventas
         btn_registro_venta = tk.Button(ventana_principal, text="Registrar Venta", command=mostrar_registro_venta , width=20, height=2)
         btn_registro_venta.pack(pady=10)
@@ -695,10 +706,6 @@ class SistemaGestionComercial:
         #Agrega boton para el informe de clientes
         btn_informe_clientes = tk.Button(ventana_principal, text="Informe de Clientes", command=mostrar_informe_clientes, width=20, height=2)
         btn_informe_clientes.pack(pady=10)
-
-        #Agrega boton para el registro de productos
-        btn_ingreso_producto = tk.Button(ventana_principal, text="Ingresar Producto", command=mostrar_ingreso_producto, width=20, height=2)
-        btn_ingreso_producto.pack(pady=10)
 
         #Agrega boton para el registro de metodos de pago
         btn_registro_metodo_pago = tk.Button(ventana_principal, text="Registrar Método de Pago", command=mostrar_registro_metodo_pago, width=20, height=2)
