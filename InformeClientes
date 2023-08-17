@@ -1,0 +1,53 @@
+import csv
+import tkinter as tk
+from tkinter import Scrollbar, Text, StringVar
+from tkinter.ttk import Combobox
+
+def mostrar_cliente_info(cliente, text_widget):
+    text_widget.delete(1.0, tk.END)
+    if cliente == "Todos":
+        text_widget.insert(tk.END, "Información de todos los clientes:\n{'='*30}\n")
+        with open('clientes.csv', 'r', newline='', encoding='utf-8') as archivo:
+            lector_csv = csv.DictReader(archivo)
+            for fila in lector_csv:
+                text_widget.insert(tk.END, f"Nombre: {fila['nombre']}\nDirección: {fila['direccion']}\nTeléfono: {fila['telefono']}\nCorreo: {fila['correo']}\n{'='*20}\n")
+    else:
+        text_widget.insert(tk.END, f"Información del cliente {cliente}:\n{'='*30}\n")
+        with open('clientes.csv', 'r', newline='', encoding='utf-8') as archivo:
+            lector_csv = csv.DictReader(archivo)
+            for fila in lector_csv:
+                if fila['nombre'] == cliente:
+                    text_widget.insert(tk.END, f"Nombre: {fila['nombre']}\nDirección: {fila['direccion']}\nTeléfono: {fila['telefono']}\nCorreo: {fila['correo']}\n{'='*20}\n")
+                    break
+
+def main():
+    ventana = tk.Tk()
+    ventana.title("Informe de Clientes")
+
+    text_widget = Text(ventana, wrap=tk.WORD)
+    text_widget.pack(fill=tk.BOTH, expand=True)
+
+    scrollbar = Scrollbar(ventana, command=text_widget.yview)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    text_widget.config(yscrollcommand=scrollbar.set)
+
+    clientes = ["Todos"]
+    with open('clientes.csv', 'r', newline='', encoding='utf-8') as archivo:
+        lector_csv = csv.DictReader(archivo)
+        for fila in lector_csv:
+            clientes.append(fila['nombre'])
+
+    seleccion_cliente = StringVar()
+    seleccion_cliente.set(clientes[0])
+
+    combobox = Combobox(ventana, values=clientes, textvariable=seleccion_cliente)
+    combobox.pack()
+
+    boton_mostrar = tk.Button(ventana, text="Mostrar información", command=lambda: mostrar_cliente_info(seleccion_cliente.get(), text_widget))
+    boton_mostrar.pack()
+
+    ventana.mainloop()
+
+if __name__ == "__main__":
+    main()
+
