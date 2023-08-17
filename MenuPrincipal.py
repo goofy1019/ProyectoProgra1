@@ -205,7 +205,7 @@ class SistemaGestionComercial:
     #Funcion para poder guardar la info de inventario usando la libreria pandas
     def guardar_productos_en_csv(self):
         df_productos = pd.DataFrame(self.productos)
-        df_productos.to_csv('Catalogo_Productos.csv', index=False)
+        df_productos.to_csv('Catalogo_Productos.csv', mode='a', header=False, index=False)
 
     #Funcion para poder actualizar el inventario
     def actualizar_inventario(self, producto, cantidad_vendida):
@@ -226,13 +226,17 @@ class SistemaGestionComercial:
         messagebox.showinfo("Informe de Clientes", "Informe de clientes generado exitosamente.")
 
     #Funcion para el ingreso de productos
-    def ingresar_producto(self, nombre, precio, Cantidad):
+    def ingresar_producto_csv(self, nombre, precio, Cantidad):
+        lista_producto = []
         producto = {
             'nombre': nombre,
             'precio': precio,
             'Cantidad': Cantidad
         }
-        self.productos.append(producto)
+        #self.productos.append(producto)
+        lista_producto.append(producto)
+        csv_file = pd.DataFrame(lista_producto)
+        csv_file.to_csv("Catalogo_Productos.csv", mode='a', header=False, index=False)
         messagebox.showinfo("Ingreso de Producto", "Producto ingresado exitosamente.")
 
     #Funcion que ayuda para registrar un metodo de pago
@@ -559,11 +563,9 @@ class SistemaGestionComercial:
 
             def ingresar_producto():
                 nombre = entry_nombre.get()
-                descripcion = entry_descripcion.get()
                 precio = entry_precio.get()
-                proveedor = entry_proveedor.get()
-                porcentaje_iva = entry_porcentaje_iva.get()
-                self.ingresar_producto(nombre, descripcion, precio, proveedor, porcentaje_iva)
+                cantidad = entry_cantidad.get()
+                self.ingresar_producto_csv(nombre, precio, cantidad)
                 ventana_ingreso_producto.destroy()
 
             label_nombre = tk.Label(ventana_ingreso_producto, text="Nombre:")
@@ -571,25 +573,17 @@ class SistemaGestionComercial:
             entry_nombre = tk.Entry(ventana_ingreso_producto)
             entry_nombre.pack()
 
-            label_descripcion = tk.Label(ventana_ingreso_producto, text="Descripción:")
-            label_descripcion.pack()
-            entry_descripcion = tk.Entry(ventana_ingreso_producto)
-            entry_descripcion.pack()
 
             label_precio = tk.Label(ventana_ingreso_producto, text="Precio:")
             label_precio.pack()
             entry_precio = tk.Entry(ventana_ingreso_producto)
             entry_precio.pack()
 
-            label_proveedor = tk.Label(ventana_ingreso_producto, text="Proveedor:")
-            label_proveedor.pack()
-            entry_proveedor = tk.Entry(ventana_ingreso_producto)
-            entry_proveedor.pack()
+            label_cantidad = tk.Label(ventana_ingreso_producto, text="Cantidad:")
+            label_cantidad.pack()
+            entry_cantidad = tk.Entry(ventana_ingreso_producto)
+            entry_cantidad.pack()
 
-            label_porcentaje_iva = tk.Label(ventana_ingreso_producto, text="Porcentaje de IVA:")
-            label_porcentaje_iva.pack()
-            entry_porcentaje_iva = tk.Entry(ventana_ingreso_producto)
-            entry_porcentaje_iva.pack()
 
             btn_ingresar = tk.Button(ventana_ingreso_producto, text="Ingresar", command=ingresar_producto)
             btn_ingresar.pack()

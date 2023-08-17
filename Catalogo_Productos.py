@@ -21,7 +21,7 @@ def Categoria_de_productos():
 
 def guardar_en_csv(productos):
     df = pd.DataFrame(productos)
-    df.to_csv("Catalogo_Productos.csv", encoding='utf-8', index=False)
+    df.to_csv("Catalogo_Productos.csv", mode='a', header=False, index=False)
 
 def cargar_desde_csv():
     try:
@@ -32,8 +32,9 @@ def cargar_desde_csv():
 
 Productos_Agregados = cargar_desde_csv()
 nuevos_productos = Categoria_de_productos()
+print(nuevos_productos)
 Productos_Agregados.extend(nuevos_productos)
-guardar_en_csv(Productos_Agregados)
+guardar_en_csv(nuevos_productos)
 
 df = pd.DataFrame(Productos_Agregados)
 print(df)
